@@ -14,9 +14,10 @@ if __name__ == "__main__":
     try:
         portOverride = sys.argv[1]
     except Exception:
+        print("Your port is not valid or is not present. Port default will be use it")
         portOverride = None
 
-    if portOverride is not None:
+    if portOverride is not None and type(portOverride) is int:
         port = portOverride
 
     application = tornado.web.Application([
