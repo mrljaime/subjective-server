@@ -3,6 +3,7 @@ import tornado.web
 import tornado.ioloop
 import json
 from stream.Partners import Partners
+import ConfigParser
 
 """
 * Start listening
@@ -10,14 +11,17 @@ from stream.Partners import Partners
 if __name__ == "__main__":
     port = 9000
 
-    portOverride = None
-    try:
-        portOverride = sys.argv[1]
-    except Exception:
-        print("Your port is not valid or is not present. Port default will be use it")
-        portOverride = None
+    """
+    Loading app config stored at config ini file.
+    """
+    config = ConfigParser.ConfigParser()
+    config.read("config/config.ini")
+    configOptions = config.options("app")
 
-    if portOverride is not None and type(portOverride) is int:
+    if "port" in configOptions:
+        portOverride = config.get("app", "port")
+
+    if portOverride is not None:
         port = portOverride
 
     application = tornado.web.Application([

@@ -53,7 +53,7 @@
         e.preventDefault();
         e.stopPropagation();
 
-        socket = new WebSocket("ws://localhost:9000/partner");
+        socket = new WebSocket("ws://localhost:7000/partner");
         socket.onopen = function(e) {
             console.log(e);
             $("#state").text("Connected");

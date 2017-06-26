@@ -1,7 +1,12 @@
 import tornado.websocket
+from tornado.escape import json_decode
+from tornado.escape import json_encode
 import uuid
 import json
 import pprint
+import ConfigParser
+
+from processMessage.PartnerMessage import PartnerMessage
 
 class Partners(tornado.websocket.WebSocketHandler):
 
@@ -9,6 +14,7 @@ class Partners(tornado.websocket.WebSocketHandler):
     * Defining constants for each connection
     """
     HANDSHAKE = "handshake"
+    MSG = "msg"
     UUID = ""
     ID = ""
 
@@ -31,8 +37,6 @@ class Partners(tornado.websocket.WebSocketHandler):
         self.write_message(msg)
 
     def on_message(self, message):
-        print("On message")
-        print("The message: %s" % message)
         msg = None
 
         try:
@@ -50,17 +54,20 @@ class Partners(tornado.websocket.WebSocketHandler):
     def on_close(self):
         pprint.pprint(self.clients)
         print("Connection closed")
-        del self.clients[self.UUID]
+        del self.clients[self.ID]
         pprint.pprint(self.clients)
 
     def closeConnection(self, reason):
         print("Closing connection by reason")
-        self.clients.pop(self.UUID)
+        del self.clients[self.ID]
         self.close(reason)
 
     def dispatchMessage(self, json):
         print("DispachMessage")
+
+        # HANDSHAKING
         if json["type"] == self.HANDSHAKE:
+
             print("Type handshake")
             if "id" not in json:
                 print("Id not in json")
@@ -69,11 +76,18 @@ class Partners(tornado.websocket.WebSocketHandler):
 
             self.UUID = json["uuid"]
             self.ID = json["id"]
-            self.clients[self.UUID] = self
+            self.clients[self.ID] = self
             pprint.pprint(self.clients)
 
             print("To see is this is working")
-            print(self.clients[self.UUID].ID)
+            print(self.clients[self.ID].UUID)
+
+        # MESSAGE
+        elif json["type"] == self.MSG:
+            try:
+                self.clients[json["to"]].write_message(json["msg"])
+            except ValueError:
+                print("There's an error: %s" % ValueError.message)
 
         else:
             self.closeConnection(400)
